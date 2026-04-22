@@ -22,6 +22,10 @@ app.add_middleware(
 def health():
     return {"status": "ok"}
 
+# Defines what the frontend needs to send when requesting a simulation.
+# FastAPI automatically validates all these values before they reach our code
+# so if the frontend sends something invalid (like num_ticks: -1), it gets
+# rejected with an error before the simulation even runs.
 
 class SimulationConfig(BaseModel):
     num_nodes: int = Field(default=10, ge=1)
@@ -31,6 +35,11 @@ class SimulationConfig(BaseModel):
     num_ticks: int = Field(default=100, ge=1)
     countermeasure_start_tick: int = Field(default=50, ge=0)
 
+# The main simulation endpoint, this is what the frontend's Run button calls.
+# It receives a config, builds the network and simulation engine, runs it,
+# and returns the full time-series metrics as JSON for the frontend to graph.
+# Attack and countermeasure functions will be wired in here in later phases
+# for now it runs a clean baseline simulation with no attack.
 
 @app.post("/simulate")
 def simulate(config: SimulationConfig):

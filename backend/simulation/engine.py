@@ -1,32 +1,40 @@
-from .network import WirelessNetwork
 from typing import Callable, Optional
 
-#runs a time-stepped simulation on the wireless network
+from .network import WirelessNetwork
+
+"""Runs a time-stepped simulation over a wireless network model."""
+
 class Simulation:
-    def __init__(self, 
-                 network: WirelessNetwork, 
-                 num_ticks: int = 100, 
-                 attack_fn: Optional[Callable[[WirelessNetwork, int], None]] = None,
-                 countermeasure_fn: Optional[Callable[[WirelessNetwork, int], None]] = None,
-                 countermeasure_start_tick: int = 50):
+
+    def __init__(
+        self,
+        network: WirelessNetwork,
+        num_ticks: int = 100,
+        attack_fn: Optional[Callable[[WirelessNetwork, int], None]] = None,
+        countermeasure_fn: Optional[Callable[[WirelessNetwork, int], None]] = None,
+        countermeasure_start_tick: int = 50,
+    ):
         self.network = network
         self.num_ticks = num_ticks
         self.attack_fn = attack_fn
         self.countermeasure_fn = countermeasure_fn
         self.countermeasure_start_tick = countermeasure_start_tick
 
+    def _apply_attack(self, tick: int):
+        if self.attack_fn is not None:
+            self.attack_fn(self.network, tick)
+
+    def _apply_countermeasure(self, tick: int):
+        if self.countermeasure_fn is not None and tick >= self.countermeasure_start_tick:
+            self.countermeasure_fn(self.network, tick)
+
+    def _run_tick(self, tick: int):
+        self._apply_attack(tick)
+        self._apply_countermeasure(tick)
+        self.network.record_metrics(tick)
+
     def run(self):
         self.network.reset()
         for tick in range(self.num_ticks):
-            # Apply attack if provided
-            if self.attack_fn: # call attack, it reaches the network and makes things worse
-                self.attack_fn(self.network, tick)
-            # Apply countermeasure only after the specified start tick
-            if self.countermeasure_fn and tick >= self.countermeasure_start_tick:
-                self.countermeasure_fn(self.network, tick)
-            # Simulate normal operation
-            throughput = self.network.base_throughput * self.network.packet_success_rate
-            dropped_packets = self.network.base_throughput - throughput
-            # Optionally update channel utilization here if needed
-            self.network.record_metrics(throughput, dropped_packets)
+            self._run_tick(tick)
         return self.network.get_metrics()
