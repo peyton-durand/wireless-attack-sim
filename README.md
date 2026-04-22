@@ -5,13 +5,13 @@ A simulation of wireless availability attacks (jamming, RACH flooding, carrier s
 ## Setup
 
 ### Backend
-cd backend
-python -m venv venv
-venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn api.main:app --reload
+* cd backend
+* python -m venv venv
+* venv\Scripts\activate
+* pip install -r requirements.txt
+* uvicorn api.main:app --reload
 
 ### Frontend
-cd frontend
-npm install
-npm run dev
+* cd frontend
+* npm install
+* npm run dev
