@@ -6,7 +6,8 @@ A simulation of wireless availability attacks (jamming, RACH flooding, carrier s
 
 ### Backend
 cd backend
-python -m venv venv && source venv/bin/activate  # or venv\Scripts\activate on Windows
+python -m venv venv
+venv\Scripts\activate
 pip install -r requirements.txt
 uvicorn api.main:app --reload
 
