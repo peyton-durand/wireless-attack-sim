@@ -1,0 +1,9 @@
+# Ignore Python bytecode files and cache directories
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+backend/api/__pycache__/
+backend/api/*.pyc
+backend/api/*.pyo
+backend/api/*.pyd
