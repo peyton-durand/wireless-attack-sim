@@ -60,6 +60,7 @@ function App() {
         <SimulationChart
           metrics={metrics}
           countermeasureStart={config.countermeasure_start_tick}
+          attackType={config.attack_type}
         />
       </div>
     </div>
