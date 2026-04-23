@@ -14,6 +14,8 @@ from simulation.attacks.rach_flood import (
     rach_flood_attack,
     rate_limiting_countermeasure,
 )
+from simulation.attacks.carrier_sense import carrier_sense_attack, nav_anomaly_countermeasure
+from simulation.markov import compute_state_sequence
 
 app = FastAPI(title="Wireless Attack Simulator")
 
@@ -36,7 +38,7 @@ def health():
 # rejected with an error before the simulation even runs.
 
 class SimulationConfig(BaseModel):
-    attack_type: Literal["none", "jamming", "rach_flood"] = "none"
+    attack_type: Literal["none", "jamming", "rach_flood", "carrier_sense"] = "none"
     num_nodes: int = Field(default=10, ge=1)
     base_throughput: float = Field(default=100.0, ge=0.0)
     packet_success_rate: float = Field(default=1.0, ge=0.0, le=1.0)
@@ -49,6 +51,7 @@ ATTACK_MAP = {
     "none": (None, None),
     "jamming": (jamming_attack, frequency_hopping_countermeasure),
     "rach_flood": (rach_flood_attack, rate_limiting_countermeasure),
+    "carrier_sense": (carrier_sense_attack, nav_anomaly_countermeasure),
 }
 
 # The main simulation endpoint, this is what the frontend's Run button calls.
@@ -80,7 +83,10 @@ def simulate(config: SimulationConfig):
         countermeasure_start_tick=config.countermeasure_start_tick,
     )
 
+    metrics = simulation.run()
+    metrics["state_sequence"] = compute_state_sequence(metrics)
+
     return {
         "config": config.model_dump(),
-        "metrics": simulation.run(),
+        "metrics": metrics,
     }

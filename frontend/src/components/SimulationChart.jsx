@@ -2,6 +2,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer, ReferenceLine
 } from "recharts";
+import MarkovStateDisplay from "./MarkovStateDisplay";
 
 function SimulationChart({ metrics, countermeasureStart, attackType }) {
   if (!metrics) return null;
@@ -18,6 +19,7 @@ function SimulationChart({ metrics, countermeasureStart, attackType }) {
 
   return (
     <div style={{ marginTop: "2rem" }}>
+      <MarkovStateDisplay states={metrics.state_sequence} />
 
       {/* Throughput */}
       <h3 style={{ marginBottom: "0.5rem", color: "#aaa" }}>Throughput</h3>

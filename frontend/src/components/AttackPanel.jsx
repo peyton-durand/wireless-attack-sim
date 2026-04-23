@@ -22,6 +22,7 @@ function AttackPanel({ config, setConfig, onRun, loading }) {
           <option value="none">None (baseline)</option>
           <option value="jamming">Jamming</option>
           <option value="rach_flood">RACH Flooding</option>
+          <option value="carrier_sense">Carrier Sense Exploit</option>
         </select>
       </label>
 
