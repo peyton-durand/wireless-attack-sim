@@ -24,7 +24,9 @@ def _get_transition_probs(current_state: str, psr: float, cu: float) -> list[flo
     health = psr * (1.0 - cu)
 
     if current_state == "NORMAL":
-        if health >= 0.55:
+        if health >= 0.80:
+            return [0.99, 0.01, 0.00, 0.00]  # near-perfect — stay normal
+        elif health >= 0.55:
             return [0.93, 0.07, 0.00, 0.00]
         elif health >= 0.25:
             return [0.20, 0.70, 0.10, 0.00]
@@ -32,7 +34,9 @@ def _get_transition_probs(current_state: str, psr: float, cu: float) -> list[flo
             return [0.00, 0.25, 0.75, 0.00]
 
     elif current_state == "DEGRADED":
-        if health >= 0.55:
+        if health >= 0.80:
+            return [0.92, 0.08, 0.00, 0.00]  # healthy again — snap back quickly
+        elif health >= 0.55:
             return [0.30, 0.55, 0.00, 0.15]
         elif health >= 0.25:
             return [0.00, 0.65, 0.35, 0.00]
@@ -48,7 +52,9 @@ def _get_transition_probs(current_state: str, psr: float, cu: float) -> list[flo
             return [0.00, 0.00, 0.95, 0.05]
 
     else:  # RECOVERING
-        if health >= 0.55:
+        if health >= 0.80:
+            return [0.95, 0.05, 0.00, 0.00]  # fully recovered — exit to NORMAL
+        elif health >= 0.55:
             return [0.65, 0.20, 0.00, 0.15]
         elif health >= 0.25:
             return [0.05, 0.25, 0.05, 0.65]
