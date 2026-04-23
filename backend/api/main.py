@@ -20,6 +20,7 @@ from simulation.markov import compute_state_sequence
 app = FastAPI(title="Wireless Attack Simulator")
 
 RACH_BASELINE_CHANNEL_UTILIZATION = 0.20
+COMPARE_ATTACKS = ["jamming", "rach_flood", "carrier_sense"]
 
 app.add_middleware(
     CORSMiddleware,
@@ -37,8 +38,7 @@ def health():
 # so if the frontend sends something invalid (like num_ticks: -1), it gets
 # rejected with an error before the simulation even runs.
 
-class SimulationConfig(BaseModel):
-    attack_type: Literal["none", "jamming", "rach_flood", "carrier_sense"] = "none"
+class BaseSimulationConfig(BaseModel):
     num_nodes: int = Field(default=10, ge=1)
     base_throughput: float = Field(default=100.0, ge=0.0)
     packet_success_rate: float = Field(default=1.0, ge=0.0, le=1.0)
@@ -47,6 +47,14 @@ class SimulationConfig(BaseModel):
     num_ticks: int = Field(default=100, ge=1)
     countermeasure_start_tick: int = Field(default=50, ge=0)
 
+
+class SimulationConfig(BaseSimulationConfig):
+    attack_type: Literal["none", "jamming", "rach_flood", "carrier_sense"] = "none"
+
+
+class CompareAllConfig(BaseSimulationConfig):
+    pass
+
 ATTACK_MAP = {
     "none": (None, None),
     "jamming": (jamming_attack, frequency_hopping_countermeasure),
@@ -54,18 +62,12 @@ ATTACK_MAP = {
     "carrier_sense": (carrier_sense_attack, nav_anomaly_countermeasure),
 }
 
-# The main simulation endpoint, this is what the frontend's Run button calls.
-# It receives a config, builds the network and simulation engine, runs it,
-# and returns the full time-series metrics as JSON for the frontend to graph.
-# Attack and countermeasure functions will be wired in here in later phases
-# for now it runs a clean baseline simulation with no attack.
 
-@app.post("/simulate")
-def simulate(config: SimulationConfig):
-    attack_fn, countermeasure_fn = ATTACK_MAP[config.attack_type]
+def _run_simulation(config: BaseSimulationConfig, attack_type: str):
+    attack_fn, countermeasure_fn = ATTACK_MAP[attack_type]
     channel_utilization = config.channel_utilization
 
-    if config.attack_type == "rach_flood" and channel_utilization == 0.0:
+    if attack_type == "rach_flood" and channel_utilization == 0.0:
         channel_utilization = RACH_BASELINE_CHANNEL_UTILIZATION
 
     network = WirelessNetwork(
@@ -85,8 +87,32 @@ def simulate(config: SimulationConfig):
 
     metrics = simulation.run()
     metrics["state_sequence"] = compute_state_sequence(metrics)
+    return metrics
+
+# The main simulation endpoint, this is what the frontend's Run button calls.
+# It receives a config, builds the network and simulation engine, runs it,
+# and returns the full time-series metrics as JSON for the frontend to graph.
+# Attack and countermeasure functions will be wired in here in later phases
+# for now it runs a clean baseline simulation with no attack.
+
+@app.post("/simulate")
+def simulate(config: SimulationConfig):
+    return {
+        "config": config.model_dump(),
+        "metrics": _run_simulation(config, config.attack_type),
+    }
+
+
+@app.post("/simulate/compare-all")
+def compare_all(config: CompareAllConfig):
+    results = {
+        attack_type: {
+            "metrics": _run_simulation(config, attack_type),
+        }
+        for attack_type in COMPARE_ATTACKS
+    }
 
     return {
         "config": config.model_dump(),
-        "metrics": metrics,
+        "results": results,
     }
