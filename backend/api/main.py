@@ -10,6 +10,10 @@ from typing import Literal
 from simulation.engine import Simulation
 from simulation.network import WirelessNetwork
 from simulation.attacks.jamming import jamming_attack, frequency_hopping_countermeasure
+from simulation.attacks.rach_flood import (
+    rach_flood_attack,
+    rate_limiting_countermeasure,
+)
 
 app = FastAPI(title="Wireless Attack Simulator")
 
@@ -30,17 +34,19 @@ def health():
 # rejected with an error before the simulation even runs.
 
 class SimulationConfig(BaseModel):
-    attack_type: Literal["none", "jamming"] = "none"
+    attack_type: Literal["none", "jamming", "rach_flood"] = "none"
     num_nodes: int = Field(default=10, ge=1)
     base_throughput: float = Field(default=100.0, ge=0.0)
     packet_success_rate: float = Field(default=1.0, ge=0.0, le=1.0)
     channel_utilization: float = Field(default=0.0, ge=0.0, le=1.0)
+    connection_success_rate: float = Field(default=1.0, ge=0.0, le=1.0)
     num_ticks: int = Field(default=100, ge=1)
     countermeasure_start_tick: int = Field(default=50, ge=0)
 
 ATTACK_MAP = {
     "none": (None, None),
     "jamming": (jamming_attack, frequency_hopping_countermeasure),
+    "rach_flood": (rach_flood_attack, rate_limiting_countermeasure),
 }
 
 # The main simulation endpoint, this is what the frontend's Run button calls.
@@ -58,6 +64,7 @@ def simulate(config: SimulationConfig):
         base_throughput=config.base_throughput,
         packet_success_rate=config.packet_success_rate,
         channel_utilization=config.channel_utilization,
+        connection_success_rate=config.connection_success_rate,
     )
     simulation = Simulation(
         network=network,
