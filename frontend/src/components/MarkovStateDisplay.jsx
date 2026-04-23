@@ -1,16 +1,16 @@
 const STATE_COLORS = {
-  NORMAL:     "#4ade80",  // green
-  DEGRADED:   "#facc15",  // yellow
-  FAILED:     "#f87171",  // red
-  RECOVERING: "#60a5fa",  // blue
+  NORMAL: "#4ade80",
+  DEGRADED: "#facc15",
+  FAILED: "#f87171",
+  RECOVERING: "#60a5fa",
 };
 
-function MarkovStateDisplay({ states, plotPadding = { left: 0, right: 0 } }) {
+function MarkovStateDisplay({ states, plotPadding = { left: 0, right: 0 }, compact = false }) {
   if (!states || states.length === 0) return null;
 
   const n = states.length;
   const interval = Math.ceil(n / 10);
-  const ticks = Array.from({ length: n }, (_, i) => i).filter(i => i % interval === 0);
+  const ticks = Array.from({ length: n }, (_, i) => i).filter((i) => i % interval === 0);
   if (ticks[ticks.length - 1] !== n - 1) ticks.push(n - 1);
 
   const innerStyle = {
@@ -18,12 +18,24 @@ function MarkovStateDisplay({ states, plotPadding = { left: 0, right: 0 } }) {
     marginRight: `${plotPadding.right}px`,
   };
 
-  return (
-    <div style={{ marginBottom: "1.5rem" }}>
-      <h3 style={{ marginBottom: "0.5rem", color: "#aaa", marginLeft: `${plotPadding.left}px` }}>Network State (Markov Chain)</h3>
+  const containerMarginBottom = compact ? "0.75rem" : "1.5rem";
+  const titleMarginBottom = compact ? "0.35rem" : "0.5rem";
+  const barHeight = compact ? "24px" : "36px";
+  const axisHeight = compact ? "14px" : "16px";
+  const axisMarginTop = compact ? "1px" : "2px";
+  const tickFontSize = compact ? "0.6rem" : "0.65rem";
+  const legendGap = compact ? "1rem" : "1.5rem";
+  const legendMarginTop = compact ? "0.25rem" : "0.4rem";
+  const legendSwatchSize = compact ? "10px" : "12px";
+  const legendFontSize = compact ? "0.72rem" : "0.8rem";
 
-      {/* Color bar — inset to match chart plot area */}
-      <div style={{ ...innerStyle, display: "flex", height: "36px", borderRadius: "4px", overflow: "hidden" }}>
+  return (
+    <div style={{ marginBottom: containerMarginBottom }}>
+      <h3 style={{ marginBottom: titleMarginBottom, color: "#aaa", marginLeft: `${plotPadding.left}px` }}>
+        Network State (Markov Chain)
+      </h3>
+
+      <div style={{ ...innerStyle, display: "flex", height: barHeight, borderRadius: "4px", overflow: "hidden" }}>
         {states.map((state, i) => (
           <div
             key={i}
@@ -33,9 +45,8 @@ function MarkovStateDisplay({ states, plotPadding = { left: 0, right: 0 } }) {
         ))}
       </div>
 
-      {/* Tick axis — same inset, positions computed relative to inner width */}
-      <div style={{ ...innerStyle, position: "relative", height: "16px", marginTop: "2px" }}>
-        {ticks.map(tick => {
+      <div style={{ ...innerStyle, position: "relative", height: axisHeight, marginTop: axisMarginTop }}>
+        {ticks.map((tick) => {
           const isFirst = tick === 0;
           const isLast = tick === n - 1;
           return (
@@ -46,7 +57,7 @@ function MarkovStateDisplay({ states, plotPadding = { left: 0, right: 0 } }) {
                 left: isLast ? "auto" : `${(tick / (n - 1)) * 100}%`,
                 right: isLast ? "0" : "auto",
                 transform: isFirst || isLast ? "none" : "translateX(-50%)",
-                fontSize: "0.65rem",
+                fontSize: tickFontSize,
                 color: "#555",
                 userSelect: "none",
               }}
@@ -57,11 +68,19 @@ function MarkovStateDisplay({ states, plotPadding = { left: 0, right: 0 } }) {
         })}
       </div>
 
-      <div style={{ display: "flex", gap: "1.5rem", marginTop: "0.4rem", flexWrap: "wrap", marginLeft: `${plotPadding.left}px` }}>
+      <div
+        style={{
+          display: "flex",
+          gap: legendGap,
+          marginTop: legendMarginTop,
+          flexWrap: "wrap",
+          marginLeft: `${plotPadding.left}px`,
+        }}
+      >
         {Object.entries(STATE_COLORS).map(([state, color]) => (
           <div key={state} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-            <div style={{ width: "12px", height: "12px", borderRadius: "2px", background: color }} />
-            <span style={{ color: "#aaa", fontSize: "0.8rem" }}>{state}</span>
+            <div style={{ width: legendSwatchSize, height: legendSwatchSize, borderRadius: "2px", background: color }} />
+            <span style={{ color: "#aaa", fontSize: legendFontSize }}>{state}</span>
           </div>
         ))}
       </div>

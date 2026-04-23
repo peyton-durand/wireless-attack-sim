@@ -4,6 +4,7 @@
 
 import { useState } from "react";
 import axios from "axios"; // axios is a library that makes it easy to send HTTP requests from the browser
+import AttackInfoCard from "./components/AttackInfoCard";
 import AttackPanel from "./components/AttackPanel";
 import ComparisonView from "./components/ComparisonView";
 import SimulationChart from "./components/SimulationChart";
@@ -17,6 +18,30 @@ const DEFAULT_CONFIG = {
   connection_success_rate: 1,
   num_ticks: 100,
   countermeasure_start_tick: 50,
+};
+
+const ATTACK_INFO = {
+  jamming: {
+    title: "Jamming",
+    description: "An attacker transmits interference on the same channel, causing legitimate packets to fail and reducing throughput.",
+    protocol: "Wireless PHY / 802.11 shared channel behavior",
+    countermeasure: "Frequency hopping or channel switching to move traffic away from interference.",
+    accentColor: "#4ade80",
+  },
+  rach_flood: {
+    title: "RACH Flooding",
+    description: "Spoofed devices flood the random access channel with fake requests, making it harder for real users to connect.",
+    protocol: "Cellular Random Access Channel (RACH)",
+    countermeasure: "Rate limiting, authentication, and backoff to reduce fake access attempts.",
+    accentColor: "#fbbf24",
+  },
+  carrier_sense: {
+    title: "Carrier Sense Exploit",
+    description: "Fake RTS/NAV reservations keep nearby devices waiting, so the channel looks busy while real throughput collapses.",
+    protocol: "802.11 CSMA/CA and NAV virtual carrier sensing",
+    countermeasure: "NAV anomaly detection and timeout thresholds to ignore unrealistic reservations.",
+    accentColor: "#60a5fa",
+  },
 };
 
 function App() {
@@ -67,6 +92,14 @@ function App() {
       </div>
 
       <div style={{ flex: 1, minWidth: 0 }}>
+        {config.attack_type !== "compare_all" && (
+          ATTACK_INFO[config.attack_type] && (
+            <div style={{ marginTop: "2rem" }}>
+              <AttackInfoCard {...ATTACK_INFO[config.attack_type]} />
+            </div>
+          )
+        )}
+
         {config.attack_type === "compare_all" ? (
           <ComparisonView
             results={comparisonResults}

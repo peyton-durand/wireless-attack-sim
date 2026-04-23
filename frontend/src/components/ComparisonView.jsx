@@ -165,6 +165,7 @@ function ComparisonView({ results, countermeasureStart }) {
             <MarkovStateDisplay
               states={results[attackType]?.metrics?.state_sequence}
               plotPadding={PLOT_PADDING}
+              compact
             />
           </div>
         ))}
