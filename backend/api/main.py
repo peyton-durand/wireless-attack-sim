@@ -17,6 +17,8 @@ from simulation.attacks.rach_flood import (
 
 app = FastAPI(title="Wireless Attack Simulator")
 
+RACH_BASELINE_CHANNEL_UTILIZATION = 0.20
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173"],  # Vite's default port
@@ -58,12 +60,16 @@ ATTACK_MAP = {
 @app.post("/simulate")
 def simulate(config: SimulationConfig):
     attack_fn, countermeasure_fn = ATTACK_MAP[config.attack_type]
+    channel_utilization = config.channel_utilization
+
+    if config.attack_type == "rach_flood" and channel_utilization == 0.0:
+        channel_utilization = RACH_BASELINE_CHANNEL_UTILIZATION
 
     network = WirelessNetwork(
         num_nodes=config.num_nodes,
         base_throughput=config.base_throughput,
         packet_success_rate=config.packet_success_rate,
-        channel_utilization=config.channel_utilization,
+        channel_utilization=channel_utilization,
         connection_success_rate=config.connection_success_rate,
     )
     simulation = Simulation(
