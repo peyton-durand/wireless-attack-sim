@@ -13,6 +13,7 @@ const DEFAULT_CONFIG = {
   base_throughput: 100,
   packet_success_rate: 1,
   channel_utilization: 0,
+  connection_success_rate: 1,
   num_ticks: 100,
   countermeasure_start_tick: 50,
 };
