@@ -8,6 +8,7 @@ class WirelessNetwork:
         base_throughput=100.0,
         packet_success_rate=1.0,
         channel_utilization=0.0,
+        connection_success_rate=1.0,
     ):
         self.num_nodes = num_nodes # how many devices/nodes that are on the network
         self.base_throughput = base_throughput # maximum packets network can send per tick and be healthy
@@ -15,10 +16,12 @@ class WirelessNetwork:
         # store the original values so reset can restore them
         self.initial_packet_success_rate = self._clamp(packet_success_rate)
         self.initial_channel_utilization = self._clamp(channel_utilization) # needs to be between 0.0 and 1.0
+        self.initial_connection_success_rate = self._clamp(connection_success_rate)
 
         # "live" values that attacks will degrade during simulation 
         self.packet_success_rate = self.initial_packet_success_rate
         self.channel_utilization = self.initial_channel_utilization
+        self.connection_success_rate = self.initial_connection_success_rate
 
         self.metrics = self._empty_metrics() #scoreboard, track how things have changed every tick
 
@@ -29,6 +32,7 @@ class WirelessNetwork:
             "throughput": [],
             "packet_success_rate": [],
             "channel_utilization": [],
+            "connection_success_rate": [],
             "dropped_packets": [],
         }
 
@@ -39,12 +43,16 @@ class WirelessNetwork:
         self.metrics = self._empty_metrics()
         self.packet_success_rate = self.initial_packet_success_rate
         self.channel_utilization = self.initial_channel_utilization
+        self.connection_success_rate = self.initial_connection_success_rate
 
     def set_packet_success_rate(self, value):
         self.packet_success_rate = self._clamp(value)
 
     def set_channel_utilization(self, value):
         self.channel_utilization = self._clamp(value)
+
+    def set_connection_success_rate(self, value):
+        self.connection_success_rate = self._clamp(value)
 
     def calculate_metrics(self):
         throughput = self.base_throughput * self.packet_success_rate
@@ -53,6 +61,7 @@ class WirelessNetwork:
             "throughput": throughput,
             "packet_success_rate": self.packet_success_rate,
             "channel_utilization": self.channel_utilization,
+            "connection_success_rate": self.connection_success_rate,
             "dropped_packets": dropped_packets,
         }
 
