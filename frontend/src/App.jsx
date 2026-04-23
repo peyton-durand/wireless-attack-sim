@@ -4,22 +4,59 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios"; // axios is a library that makes it easy to send HTTP requests from the browser
+import AttackPanel from "./components/AttackPanel";
+import SimulationChart from "./components/SimulationChart";
+
+const DEFAULT_CONFIG = {
+  attack_type: "none",
+  num_nodes: 10,
+  base_throughput: 100,
+  packet_success_rate: 1,
+  channel_utilization: 0,
+  num_ticks: 100,
+  countermeasure_start_tick: 50,
+};
 
 function App() {
-  const [status, setStatus] = useState(null);
+  const [config, setConfig] = useState(DEFAULT_CONFIG);
+  const [metrics, setMetrics] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // When the component mounts, we send a GET request to the backend's health endpoint
-  useEffect(() => {
-    axios.get("http://localhost:8000/health")
-      .then(res => setStatus(res.data.status))
-      .catch(() => setStatus("error — is the backend running?"));
-  }, []);
+  async function handleRun() {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await axios.post("http://localhost:8000/simulate", config);
+      setMetrics(res.data.metrics);
+    } catch (e) {
+      setError("Simulation failed — is the backend running?");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   // This is what the component renders.
   return (
-    <div style={{ fontFamily: "monospace", padding: "2rem" }}>
-      <h1>Wireless Attack Simulator</h1>
-      <p>Backend status: <strong>{status ?? "checking..."}</strong></p>
+    <div style={{ padding: "2rem", maxWidth: "900px", margin: "0 auto" }}>
+      <h1 style={{ marginBottom: "0.25rem" }}>Wireless Attack Simulator</h1>
+      <p style={{ color: "#555", marginBottom: "2rem" }}>
+        Simulating jamming, RACH flooding, and carrier sense exploits
+      </p>
+
+      <AttackPanel
+        config={config}
+        setConfig={setConfig}
+        onRun={handleRun}
+        loading={loading}
+      />
+
+      {error && <p style={{ color: "#f87171", marginTop: "1rem" }}>{error}</p>}
+
+      <SimulationChart
+        metrics={metrics}
+        countermeasureStart={config.countermeasure_start_tick}
+      />
     </div>
   );
 }
