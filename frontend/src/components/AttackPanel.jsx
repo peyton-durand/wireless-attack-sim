@@ -20,6 +20,7 @@ function AttackPanel({ config, setConfig, onRun, loading }) {
           style={{ display: "block", marginTop: "0.25rem", width: "100%", padding: "0.5rem", background: "#0f1117", color: "#e0e0e0", border: "1px solid #444", borderRadius: "4px" }}
         >
           <option value="none">None (baseline)</option>
+          <option value="compare_all">Compare All</option>
           <option value="jamming">Jamming</option>
           <option value="rach_flood">RACH Flooding</option>
           <option value="carrier_sense">Carrier Sense Exploit</option>

@@ -2,7 +2,7 @@
 // It defines the App component, which checks the health of the backend API
 // and displays the status on the page.
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import axios from "axios"; // axios is a library that makes it easy to send HTTP requests from the browser
 import AttackPanel from "./components/AttackPanel";
 import SimulationChart from "./components/SimulationChart";
@@ -21,6 +21,7 @@ const DEFAULT_CONFIG = {
 function App() {
   const [config, setConfig] = useState(DEFAULT_CONFIG);
   const [metrics, setMetrics] = useState(null);
+  const [comparisonResults, setComparisonResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -28,10 +29,18 @@ function App() {
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.post("http://localhost:8000/simulate", config);
-      setMetrics(res.data.metrics);
+      if (config.attack_type === "compare_all") {
+        const { attack_type, ...compareConfig } = config;
+        const res = await axios.post("http://localhost:8000/simulate/compare-all", compareConfig);
+        setComparisonResults(res.data.results);
+        setMetrics(null);
+      } else {
+        const res = await axios.post("http://localhost:8000/simulate", config);
+        setMetrics(res.data.metrics);
+        setComparisonResults(null);
+      }
     } catch (e) {
-      setError("Simulation failed — is the backend running?");
+      setError("Simulation failed - is the backend running?");
     } finally {
       setLoading(false);
     }
@@ -57,11 +66,20 @@ function App() {
       </div>
 
       <div style={{ flex: 1, minWidth: 0 }}>
-        <SimulationChart
-          metrics={metrics}
-          countermeasureStart={config.countermeasure_start_tick}
-          attackType={config.attack_type}
-        />
+        {config.attack_type === "compare_all" ? (
+          comparisonResults && (
+            <div style={{ marginTop: "2rem", padding: "1.25rem", background: "#1a1a1a", border: "1px solid #333", borderRadius: "8px", color: "#aaa" }}>
+              Compare-all data loaded for {Object.keys(comparisonResults).length} attacks.
+              The dedicated comparison view will render here next.
+            </div>
+          )
+        ) : (
+          <SimulationChart
+            metrics={metrics}
+            countermeasureStart={config.countermeasure_start_tick}
+            attackType={config.attack_type}
+          />
+        )}
       </div>
     </div>
   );
