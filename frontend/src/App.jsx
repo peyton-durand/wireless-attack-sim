@@ -5,6 +5,7 @@
 import { useState } from "react";
 import axios from "axios"; // axios is a library that makes it easy to send HTTP requests from the browser
 import AttackPanel from "./components/AttackPanel";
+import ComparisonView from "./components/ComparisonView";
 import SimulationChart from "./components/SimulationChart";
 
 const DEFAULT_CONFIG = {
@@ -67,12 +68,10 @@ function App() {
 
       <div style={{ flex: 1, minWidth: 0 }}>
         {config.attack_type === "compare_all" ? (
-          comparisonResults && (
-            <div style={{ marginTop: "2rem", padding: "1.25rem", background: "#1a1a1a", border: "1px solid #333", borderRadius: "8px", color: "#aaa" }}>
-              Compare-all data loaded for {Object.keys(comparisonResults).length} attacks.
-              The dedicated comparison view will render here next.
-            </div>
-          )
+          <ComparisonView
+            results={comparisonResults}
+            countermeasureStart={config.countermeasure_start_tick}
+          />
         ) : (
           <SimulationChart
             metrics={metrics}
