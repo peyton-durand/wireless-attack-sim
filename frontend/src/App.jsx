@@ -38,25 +38,29 @@ function App() {
 
   // This is what the component renders.
   return (
-    <div style={{ padding: "2rem", maxWidth: "900px", margin: "0 auto" }}>
-      <h1 style={{ marginBottom: "0.25rem" }}>Wireless Attack Simulator</h1>
-      <p style={{ color: "#555", marginBottom: "2rem" }}>
-        Simulating jamming, RACH flooding, and carrier sense exploits
-      </p>
+    <div style={{ padding: "2rem", display: "flex", gap: "2rem", alignItems: "flex-start", minHeight: "100vh", boxSizing: "border-box" }}>
+      <div style={{ flex: "0 0 320px" }}>
+        <h1 style={{ marginBottom: "0.25rem" }}>Wireless Attack Simulator</h1>
+        <p style={{ color: "#555", marginBottom: "2rem" }}>
+          Simulating jamming, RACH flooding, and carrier sense exploits
+        </p>
 
-      <AttackPanel
-        config={config}
-        setConfig={setConfig}
-        onRun={handleRun}
-        loading={loading}
-      />
+        <AttackPanel
+          config={config}
+          setConfig={setConfig}
+          onRun={handleRun}
+          loading={loading}
+        />
 
-      {error && <p style={{ color: "#f87171", marginTop: "1rem" }}>{error}</p>}
+        {error && <p style={{ color: "#f87171", marginTop: "1rem" }}>{error}</p>}
+      </div>
 
-      <SimulationChart
-        metrics={metrics}
-        countermeasureStart={config.countermeasure_start_tick}
-      />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <SimulationChart
+          metrics={metrics}
+          countermeasureStart={config.countermeasure_start_tick}
+        />
+      </div>
     </div>
   );
 }
