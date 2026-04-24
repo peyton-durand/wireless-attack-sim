@@ -172,9 +172,10 @@ function ComparisonView({ results, countermeasureStart }) {
       </section>
 
       <OverlayMetricChart
-        title="Throughput Comparison"
+        title="Throughput Comparison (Mbps)"
         data={rawData}
         metricKey="throughput"
+        domain={[0, 380]}
         countermeasureStart={countermeasureStart}
       />
 
@@ -204,7 +205,7 @@ function ComparisonView({ results, countermeasureStart }) {
       />
 
       <OverlayMetricChart
-        title="Dropped Packets Comparison"
+        title="Dropped Packets Comparison (Mbps)"
         data={rawData}
         metricKey="dropped_packets"
         countermeasureStart={countermeasureStart}

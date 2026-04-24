@@ -19,7 +19,7 @@ from simulation.markov import compute_state_sequence
 
 app = FastAPI(title="Wireless Attack Simulator")
 
-RACH_BASELINE_CHANNEL_UTILIZATION = 0.20
+RACH_BASELINE_CHANNEL_UTILIZATION = 0.15
 COMPARE_ATTACKS = ["jamming", "rach_flood", "carrier_sense"]
 
 app.add_middleware(
@@ -40,10 +40,10 @@ def health():
 
 class BaseSimulationConfig(BaseModel):
     num_nodes: int = Field(default=10, ge=1)
-    base_throughput: float = Field(default=100.0, ge=0.0)
-    packet_success_rate: float = Field(default=1.0, ge=0.0, le=1.0)
-    channel_utilization: float = Field(default=0.0, ge=0.0, le=1.0)
-    connection_success_rate: float = Field(default=1.0, ge=0.0, le=1.0)
+    base_throughput: float = Field(default=300.0, ge=0.0)
+    packet_success_rate: float = Field(default=0.98, ge=0.0, le=1.0)
+    channel_utilization: float = Field(default=0.15, ge=0.0, le=1.0)
+    connection_success_rate: float = Field(default=0.99, ge=0.0, le=1.0)
     offered_load: float = Field(default=0.65, ge=0.0, le=1.0)
     noise_std: float = Field(default=0.01, ge=0.0, le=0.5)
     num_ticks: int = Field(default=100, ge=1)

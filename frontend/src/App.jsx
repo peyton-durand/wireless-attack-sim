@@ -12,10 +12,12 @@ import SimulationChart from "./components/SimulationChart";
 const DEFAULT_CONFIG = {
   attack_type: "none",
   num_nodes: 10,
-  base_throughput: 100,
-  packet_success_rate: 1,
-  channel_utilization: 0,
-  connection_success_rate: 1,
+  base_throughput: 300,
+  packet_success_rate: 0.98,
+  channel_utilization: 0.15,
+  connection_success_rate: 0.99,
+  offered_load: 0.65,
+  noise_std: 0.02,
   num_ticks: 100,
   countermeasure_start_tick: 50,
 };

@@ -6,8 +6,8 @@ switches channels, gradually restoring packet success rate.
 
 from simulation.network import WirelessNetwork
 
-JAMMER_INTENSITY = 0.03   # how much packet success rate drops per tick
-RECOVERY_RATE = 0.05      # how fast frequency hopping recovers per tick
+JAMMER_INTENSITY = 0.04   # how much packet success rate drops per tick (5 GHz jamming is effective on-channel)
+RECOVERY_RATE = 0.06      # how fast frequency hopping recovers per tick (802.11ac has 25 non-overlapping 5 GHz channels)
 
 
 def jamming_attack(network: WirelessNetwork, tick: int) -> None:

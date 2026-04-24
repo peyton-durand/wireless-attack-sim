@@ -19,7 +19,7 @@ CS_CHANNEL_CEILING = 0.97     # attacker saturates channel but can't quite hit 1
 
 CS_NAV_RELIEF = 0.07          # channel utilization cleared per tick after detection
 CS_PACKET_RECOVERY = 0.05     # packet success rate recovered per tick
-CS_HEALTHY_CHANNEL_BASELINE = 0.05  # resting channel utilization after recovery
+CS_HEALTHY_CHANNEL_BASELINE = 0.15  # resting channel utilization after recovery (matches home network background traffic)
 
 
 def carrier_sense_attack(network, tick: int) -> None:
