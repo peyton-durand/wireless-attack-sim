@@ -60,8 +60,9 @@ class WirelessNetwork:
         self.connection_success_rate = self._clamp(value)
 
     def _contention_factor(self):
-        # More nodes create more collisions and retransmissions on a shared medium.
-        return min(0.5, max(0.0, (self.num_nodes - 1) * 0.02))
+        # 802.11ac CSMA/CA with A-MPDU keeps collision-induced drops low; 0.001 per extra node
+        # gives ~0.9% overhead at 10 nodes, scaling to ~5% at 50 nodes.
+        return min(0.5, max(0.0, (self.num_nodes - 1) * 0.001))
 
     def calculate_metrics(self):
         offered_traffic = self.base_throughput * self.offered_load

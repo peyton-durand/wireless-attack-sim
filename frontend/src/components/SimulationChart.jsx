@@ -13,14 +13,17 @@ function SimulationChart({ metrics, countermeasureStart, attackType }) {
   if (!metrics) return null;
 
   // Recharts wants an array of objects, one per tick
-  const data = metrics.ticks.map((tick, i) => ({
-    tick,
-    throughput: metrics.throughput[i],
-    packet_success_rate: parseFloat((metrics.packet_success_rate[i] * 100).toFixed(1)),
-    channel_utilization: parseFloat((metrics.channel_utilization[i] * 100).toFixed(1)),
-    connection_success_rate: parseFloat((metrics.connection_success_rate[i] * 100).toFixed(1)),
-    dropped_packets: metrics.dropped_packets[i],
-  }));
+  const data = metrics.ticks.map((tick, i) => {
+    const offered = metrics.throughput[i] + metrics.dropped_packets[i];
+    return {
+      tick,
+      throughput: metrics.throughput[i],
+      packet_success_rate: parseFloat((metrics.packet_success_rate[i] * 100).toFixed(1)),
+      channel_utilization: parseFloat((metrics.channel_utilization[i] * 100).toFixed(1)),
+      connection_success_rate: parseFloat((metrics.connection_success_rate[i] * 100).toFixed(1)),
+      dropped_packets: offered > 0 ? parseFloat((metrics.dropped_packets[i] / offered * 100).toFixed(1)) : 0,
+    };
+  });
 
   return (
     <div style={{ marginTop: "2rem" }}>
@@ -83,12 +86,12 @@ function SimulationChart({ metrics, countermeasureStart, attackType }) {
       )}
 
       {/* Dropped Packets */}
-      <h3 style={{ marginBottom: "0.5rem", marginTop: "1.5rem", color: "#aaa" }}>Dropped Packets (Mbps)</h3>
+      <h3 style={{ marginBottom: "0.5rem", marginTop: "1.5rem", color: "#aaa" }}>Dropped Packets (%)</h3>
       <ResponsiveContainer width="100%" height={200}>
         <LineChart data={data} margin={CHART_MARGIN}>
           <CartesianGrid strokeDasharray="3 3" stroke="#333" />
           <XAxis dataKey="tick" stroke="#555" />
-          <YAxis stroke="#555" width={YAXIS_WIDTH} />
+          <YAxis stroke="#555" width={YAXIS_WIDTH} domain={[0, 100]} />
           <Tooltip contentStyle={{ background: "#1a1a1a", border: "1px solid #333" }} />
           <ReferenceLine x={countermeasureStart} stroke="#facc15" strokeDasharray="4 4" />
           <Line type="monotone" dataKey="dropped_packets" stroke="#e879f9" dot={false} strokeWidth={2} />

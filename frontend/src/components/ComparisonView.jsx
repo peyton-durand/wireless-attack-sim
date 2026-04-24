@@ -144,8 +144,20 @@ function ComparisonView({ results, countermeasureStart }) {
     ) {
       return parseFloat((value * 100).toFixed(1));
     }
-
     return value;
+  });
+
+  const droppedPctData = rawData.map((row) => {
+    const newRow = { ...row };
+    ATTACK_ORDER.forEach((attackType) => {
+      const tp = row[`${attackType}_throughput`] ?? 0;
+      const dp = row[`${attackType}_dropped_packets`] ?? 0;
+      const offered = tp + dp;
+      newRow[`${attackType}_dropped_packets`] = offered > 0
+        ? parseFloat((dp / offered * 100).toFixed(1))
+        : 0;
+    });
+    return newRow;
   });
 
   return (
@@ -205,9 +217,10 @@ function ComparisonView({ results, countermeasureStart }) {
       />
 
       <OverlayMetricChart
-        title="Dropped Packets Comparison (Mbps)"
-        data={rawData}
+        title="Dropped Packets Comparison (%)"
+        data={droppedPctData}
         metricKey="dropped_packets"
+        domain={[0, 100]}
         countermeasureStart={countermeasureStart}
       />
     </div>
