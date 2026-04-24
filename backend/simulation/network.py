@@ -1,4 +1,5 @@
 """Represents the current state of the simulated wireless network."""
+import random
 
 class WirelessNetwork:
 
@@ -10,10 +11,12 @@ class WirelessNetwork:
         channel_utilization=0.0,
         connection_success_rate=1.0,
         offered_load=0.65,
+        noise_std=0.01,
     ):
         self.num_nodes = num_nodes # how many devices/nodes that are on the network
         self.base_throughput = base_throughput # maximum packets network can send per tick and be healthy
         self.offered_load = self._clamp(offered_load)
+        self.noise_std = noise_std
 
         # store the original values so reset can restore them
         self.initial_packet_success_rate = self._clamp(packet_success_rate)
@@ -78,6 +81,13 @@ class WirelessNetwork:
         self.metrics["ticks"].append(tick)
         for metric_name, metric_value in current_metrics.items():
             self.metrics[metric_name].append(metric_value)
+
+    def apply_noise(self, rng: random.Random):
+        if self.noise_std <= 0.0:
+            return
+        self.set_packet_success_rate(self.packet_success_rate + rng.gauss(0, self.noise_std))
+        self.set_channel_utilization(self.channel_utilization + rng.gauss(0, self.noise_std))
+        self.set_connection_success_rate(self.connection_success_rate + rng.gauss(0, self.noise_std))
 
     def get_metrics(self):
         return self.metrics

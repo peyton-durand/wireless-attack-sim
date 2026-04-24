@@ -45,6 +45,7 @@ class BaseSimulationConfig(BaseModel):
     channel_utilization: float = Field(default=0.0, ge=0.0, le=1.0)
     connection_success_rate: float = Field(default=1.0, ge=0.0, le=1.0)
     offered_load: float = Field(default=0.65, ge=0.0, le=1.0)
+    noise_std: float = Field(default=0.01, ge=0.0, le=0.5)
     num_ticks: int = Field(default=100, ge=1)
     countermeasure_start_tick: int = Field(default=50, ge=0)
 
@@ -78,6 +79,7 @@ def _run_simulation(config: BaseSimulationConfig, attack_type: str):
         channel_utilization=channel_utilization,
         connection_success_rate=config.connection_success_rate,
         offered_load=config.offered_load,
+        noise_std=config.noise_std,
     )
     simulation = Simulation(
         network=network,
