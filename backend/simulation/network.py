@@ -1,5 +1,4 @@
 """Represents the current state of the simulated wireless network."""
-import random
 
 class WirelessNetwork:
 
@@ -77,18 +76,24 @@ class WirelessNetwork:
             "dropped_packets": dropped_packets,
         }
 
-    def record_metrics(self, tick):
+    def record_metrics(self, tick, rng=None):
         current_metrics = self.calculate_metrics()
+        if rng is not None and self.noise_std > 0.0:
+            noisy_psr = self._clamp(current_metrics["packet_success_rate"] + rng.gauss(0, self.noise_std))
+            noisy_cu  = self._clamp(current_metrics["channel_utilization"]  + rng.gauss(0, self.noise_std))
+            noisy_csr = self._clamp(current_metrics["connection_success_rate"] + rng.gauss(0, self.noise_std))
+            offered   = self.base_throughput * self.offered_load
+            noisy_tp  = offered * max(0.0, noisy_psr * (1.0 - self._contention_factor()))
+            current_metrics.update({
+                "packet_success_rate":    noisy_psr,
+                "channel_utilization":    noisy_cu,
+                "connection_success_rate": noisy_csr,
+                "throughput":             noisy_tp,
+                "dropped_packets":        max(0.0, offered - noisy_tp),
+            })
         self.metrics["ticks"].append(tick)
         for metric_name, metric_value in current_metrics.items():
             self.metrics[metric_name].append(metric_value)
-
-    def apply_noise(self, rng: random.Random):
-        if self.noise_std <= 0.0:
-            return
-        self.set_packet_success_rate(self.packet_success_rate + rng.gauss(0, self.noise_std))
-        self.set_channel_utilization(self.channel_utilization + rng.gauss(0, self.noise_std))
-        self.set_connection_success_rate(self.connection_success_rate + rng.gauss(0, self.noise_std))
 
     def get_metrics(self):
         return self.metrics

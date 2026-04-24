@@ -34,8 +34,7 @@ class Simulation:
     def _run_tick(self, tick: int):
         self._apply_attack(tick)
         self._apply_countermeasure(tick)
-        self.network.apply_noise(self._rng)
-        self.network.record_metrics(tick)
+        self.network.record_metrics(tick, self._rng)
 
     def run(self):
         self.network.reset()
