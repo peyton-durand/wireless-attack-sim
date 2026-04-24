@@ -19,10 +19,12 @@ import random
 STATES = ["NORMAL", "DEGRADED", "FAILED", "RECOVERING"]
 
 
-def _get_transition_probs(current_state: str, psr: float, cu: float) -> list[float]:
-    """Return transition probability vector [P(NORMAL), P(DEGRADED), P(FAILED), P(RECOVERING)]."""
-    health = psr * (1.0 - cu)
+def _get_transition_probs(current_state: str, health: float) -> list[float]:
+    """Return transition probability vector [P(NORMAL), P(DEGRADED), P(FAILED), P(RECOVERING)].
 
+    health is relative to the tick-0 baseline (1.0 = as healthy as the simulation started,
+    0.0 = fully collapsed), so thresholds stay meaningful regardless of node count.
+    """
     if current_state == "NORMAL":
         if health >= 0.80:
             return [0.99, 0.01, 0.00, 0.00]  # near-perfect — stay normal
@@ -68,11 +70,17 @@ def compute_state_sequence(metrics: dict) -> list[str]:
     psr_list = metrics["packet_success_rate"]
     cu_list = metrics["channel_utilization"]
 
+    # Anchor health to tick 0 so the chain measures degradation from the actual
+    # starting conditions rather than an absolute value. This keeps thresholds
+    # meaningful regardless of node count or initial channel utilization.
+    baseline_health = max(0.01, psr_list[0] * (1.0 - cu_list[0]))
+
     current_state = "NORMAL"
     states: list[str] = []
 
     for psr, cu in zip(psr_list, cu_list):
-        probs = _get_transition_probs(current_state, psr, cu)
+        health = min(1.0, (psr * (1.0 - cu)) / baseline_health)
+        probs = _get_transition_probs(current_state, health)
         current_state = rng.choices(STATES, weights=probs, k=1)[0]
         states.append(current_state)
 
