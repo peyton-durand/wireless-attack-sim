@@ -9,9 +9,11 @@ class WirelessNetwork:
         packet_success_rate=1.0,
         channel_utilization=0.0,
         connection_success_rate=1.0,
+        offered_load=0.65,
     ):
         self.num_nodes = num_nodes # how many devices/nodes that are on the network
         self.base_throughput = base_throughput # maximum packets network can send per tick and be healthy
+        self.offered_load = self._clamp(offered_load)
 
         # store the original values so reset can restore them
         self.initial_packet_success_rate = self._clamp(packet_success_rate)
@@ -54,9 +56,15 @@ class WirelessNetwork:
     def set_connection_success_rate(self, value):
         self.connection_success_rate = self._clamp(value)
 
+    def _contention_factor(self):
+        # More nodes create more collisions and retransmissions on a shared medium.
+        return min(0.5, max(0.0, (self.num_nodes - 1) * 0.02))
+
     def calculate_metrics(self):
-        throughput = self.base_throughput * self.packet_success_rate
-        dropped_packets = max(0.0, self.base_throughput - throughput)
+        offered_traffic = self.base_throughput * self.offered_load
+        effective_success = max(0.0, self.packet_success_rate * (1.0 - self._contention_factor()))
+        throughput = offered_traffic * effective_success
+        dropped_packets = max(0.0, offered_traffic - throughput)
         return {
             "throughput": throughput,
             "packet_success_rate": self.packet_success_rate,
