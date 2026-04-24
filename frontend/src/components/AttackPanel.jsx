@@ -28,6 +28,14 @@ function AttackPanel({ config, setConfig, onRun, loading }) {
       </label>
 
       <label style={{ color: "#aaa", fontSize: "0.85rem" }}>
+        Nodes on Network: {config.num_nodes}
+        <input type="range" min="3" max="15" value={config.num_nodes}
+          onChange={e => setConfig({ ...config, num_nodes: parseInt(e.target.value) })}
+          style={{ display: "block", width: "100%", marginTop: "0.25rem" }}
+        />
+      </label>
+
+      <label style={{ color: "#aaa", fontSize: "0.85rem" }}>
         Number of Ticks: {config.num_ticks}
         <input type="range" min="50" max="200" value={config.num_ticks}
           onChange={e => setConfig({ ...config, num_ticks: parseInt(e.target.value) })}

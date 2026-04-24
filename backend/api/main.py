@@ -19,7 +19,6 @@ from simulation.markov import compute_state_sequence
 
 app = FastAPI(title="Wireless Attack Simulator")
 
-RACH_BASELINE_CHANNEL_UTILIZATION = 0.15
 COMPARE_ATTACKS = ["jamming", "rach_flood", "carrier_sense"]
 
 app.add_middleware(
@@ -67,16 +66,11 @@ ATTACK_MAP = {
 
 def _run_simulation(config: BaseSimulationConfig, attack_type: str):
     attack_fn, countermeasure_fn = ATTACK_MAP[attack_type]
-    channel_utilization = config.channel_utilization
-
-    if attack_type == "rach_flood" and channel_utilization == 0.0:
-        channel_utilization = RACH_BASELINE_CHANNEL_UTILIZATION
 
     network = WirelessNetwork(
         num_nodes=config.num_nodes,
         base_throughput=config.base_throughput,
         packet_success_rate=config.packet_success_rate,
-        channel_utilization=channel_utilization,
         connection_success_rate=config.connection_success_rate,
         offered_load=config.offered_load,
         noise_std=config.noise_std,

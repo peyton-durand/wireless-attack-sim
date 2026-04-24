@@ -5,12 +5,11 @@ class WirelessNetwork:
     def __init__(
         self,
         num_nodes=10,
-        base_throughput=100.0,
-        packet_success_rate=1.0,
-        channel_utilization=0.0,
-        connection_success_rate=1.0,
+        base_throughput=300.0,
+        packet_success_rate=0.98,
+        connection_success_rate=0.99,
         offered_load=0.65,
-        noise_std=0.01,
+        noise_std=0.02,
     ):
         self.num_nodes = num_nodes # how many devices/nodes that are on the network
         self.base_throughput = base_throughput # maximum packets network can send per tick and be healthy
@@ -19,7 +18,8 @@ class WirelessNetwork:
 
         # store the original values so reset can restore them
         self.initial_packet_success_rate = self._clamp(packet_success_rate)
-        self.initial_channel_utilization = self._clamp(channel_utilization) # needs to be between 0.0 and 1.0
+        # CU is derived from node count: more devices = more background contention on the shared medium
+        self.initial_channel_utilization = self._node_channel_utilization()
         self.initial_connection_success_rate = self._clamp(connection_success_rate)
 
         # "live" values that attacks will degrade during simulation 
@@ -58,10 +58,15 @@ class WirelessNetwork:
     def set_connection_success_rate(self, value):
         self.connection_success_rate = self._clamp(value)
 
+    def _node_channel_utilization(self):
+        # Power curve fits the 802.11ac home network table:
+        # 3 nodes: ~17%, 8 nodes: ~42%, 12 nodes: ~58%, 15 nodes: ~69%
+        return min(0.85, 0.08 * self.num_nodes ** 0.7)
+
     def _contention_factor(self):
-        # 802.11ac CSMA/CA with A-MPDU keeps collision-induced drops low; 0.001 per extra node
-        # gives ~0.9% overhead at 10 nodes, scaling to ~5% at 50 nodes.
-        return min(0.5, max(0.0, (self.num_nodes - 1) * 0.001))
+        # Collision overhead scales with node count; 0.002 per extra node gives
+        # a visible drop-rate increase while staying modest at low node counts.
+        return min(0.5, max(0.0, (self.num_nodes - 1) * 0.002))
 
     def calculate_metrics(self):
         offered_traffic = self.base_throughput * self.offered_load
