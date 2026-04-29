@@ -18,8 +18,9 @@ class WirelessNetwork:
 
         # store the original values so reset can restore them
         self.initial_packet_success_rate = self._clamp(packet_success_rate)
-        # CU is derived from node count: more devices = more background contention on the shared medium
-        self.initial_channel_utilization = self._node_channel_utilization()
+        # CU is derived from both node count and offered load: more devices and
+        # more attempted traffic create a busier shared medium before attacks start.
+        self.initial_channel_utilization = self._baseline_channel_utilization()
         self.initial_connection_success_rate = self._clamp(connection_success_rate)
 
         # "live" values that attacks will degrade during simulation 
@@ -62,6 +63,11 @@ class WirelessNetwork:
         # Power curve fits the 802.11ac home network table:
         # 3 nodes: ~17%, 8 nodes: ~42%, 12 nodes: ~58%, 15 nodes: ~69%
         return min(0.85, 0.08 * self.num_nodes ** 0.7)
+
+    def _baseline_channel_utilization(self):
+        node_contention = self._node_channel_utilization()
+        load_pressure = self.offered_load * 0.18
+        return self._clamp(node_contention + load_pressure, maximum=0.95)
 
     def _contention_factor(self):
         # Collision overhead scales with node count; 0.002 per extra node gives

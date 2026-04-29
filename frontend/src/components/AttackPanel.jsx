@@ -36,6 +36,14 @@ function AttackPanel({ config, setConfig, onRun, loading }) {
       </label>
 
       <label style={{ color: "#aaa", fontSize: "0.85rem" }}>
+        Offered Load: {Math.round(config.offered_load * 100)}%
+        <input type="range" min="0.2" max="1" step="0.05" value={config.offered_load}
+          onChange={e => setConfig({ ...config, offered_load: parseFloat(e.target.value) })}
+          style={{ display: "block", width: "100%", marginTop: "0.25rem" }}
+        />
+      </label>
+
+      <label style={{ color: "#aaa", fontSize: "0.85rem" }}>
         Number of Ticks: {config.num_ticks}
         <input type="range" min="50" max="200" value={config.num_ticks}
           onChange={e => setConfig({ ...config, num_ticks: parseInt(e.target.value) })}
