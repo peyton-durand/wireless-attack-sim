@@ -192,6 +192,13 @@ function ComparisonView({ results, countermeasureStart }) {
       />
 
       <OverlayMetricChart
+        title="Latency Comparison (ms)"
+        data={rawData}
+        metricKey="latency_ms"
+        countermeasureStart={countermeasureStart}
+      />
+
+      <OverlayMetricChart
         title="Packet Success Rate Comparison (%)"
         data={percentData}
         metricKey="packet_success_rate"

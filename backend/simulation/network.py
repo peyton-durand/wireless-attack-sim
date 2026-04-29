@@ -35,6 +35,7 @@ class WirelessNetwork:
         return {
             "ticks": [],
             "throughput": [],
+            "latency_ms": [],
             "packet_success_rate": [],
             "channel_utilization": [],
             "connection_success_rate": [],
@@ -74,13 +75,23 @@ class WirelessNetwork:
         # a visible drop-rate increase while staying modest at low node counts.
         return min(0.5, max(0.0, (self.num_nodes - 1) * 0.002))
 
+    def _latency_ms(self, effective_success):
+        # Latency rises as the shared medium gets busier and packet delivery becomes less reliable.
+        base_latency = 12.0
+        queue_delay = self.channel_utilization * 80.0
+        retry_delay = (1.0 - effective_success) * 120.0
+        load_delay = self.offered_load * 25.0
+        return base_latency + queue_delay + retry_delay + load_delay
+
     def calculate_metrics(self):
         offered_traffic = self.base_throughput * self.offered_load
         effective_success = max(0.0, self.packet_success_rate * (1.0 - self._contention_factor()))
         throughput = offered_traffic * effective_success
         dropped_packets = max(0.0, offered_traffic - throughput)
+        latency_ms = self._latency_ms(effective_success)
         return {
             "throughput": throughput,
+            "latency_ms": latency_ms,
             "packet_success_rate": self.packet_success_rate,
             "channel_utilization": self.channel_utilization,
             "connection_success_rate": self.connection_success_rate,
@@ -95,11 +106,13 @@ class WirelessNetwork:
             noisy_csr = self._clamp(current_metrics["connection_success_rate"] + rng.gauss(0, self.noise_std))
             offered   = self.base_throughput * self.offered_load
             noisy_tp  = offered * max(0.0, noisy_psr * (1.0 - self._contention_factor()))
+            noisy_latency = self._latency_ms(max(0.0, noisy_psr * (1.0 - self._contention_factor())))
             current_metrics.update({
                 "packet_success_rate":    noisy_psr,
                 "channel_utilization":    noisy_cu,
                 "connection_success_rate": noisy_csr,
                 "throughput":             noisy_tp,
+                "latency_ms":            noisy_latency,
                 "dropped_packets":        max(0.0, offered - noisy_tp),
             })
         self.metrics["ticks"].append(tick)

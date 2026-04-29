@@ -18,6 +18,7 @@ function SimulationChart({ metrics, countermeasureStart, attackType }) {
     return {
       tick,
       throughput: metrics.throughput[i],
+      latency_ms: parseFloat(metrics.latency_ms[i].toFixed(1)),
       packet_success_rate: parseFloat((metrics.packet_success_rate[i] * 100).toFixed(1)),
       channel_utilization: parseFloat((metrics.channel_utilization[i] * 100).toFixed(1)),
       connection_success_rate: parseFloat((metrics.connection_success_rate[i] * 100).toFixed(1)),
@@ -39,6 +40,19 @@ function SimulationChart({ metrics, countermeasureStart, attackType }) {
           <Tooltip contentStyle={{ background: "#1a1a1a", border: "1px solid #333" }} />
           <ReferenceLine x={countermeasureStart} stroke="#facc15" strokeDasharray="4 4" label={{ value: "countermeasure", fill: "#facc15", fontSize: 11 }} />
           <Line type="monotone" dataKey="throughput" stroke="#4ade80" dot={false} strokeWidth={2} />
+        </LineChart>
+      </ResponsiveContainer>
+
+      {/* Latency */}
+      <h3 style={{ marginBottom: "0.5rem", marginTop: "1.5rem", color: "#aaa" }}>Latency (ms)</h3>
+      <ResponsiveContainer width="100%" height={200}>
+        <LineChart data={data} margin={CHART_MARGIN}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+          <XAxis dataKey="tick" stroke="#555" />
+          <YAxis stroke="#555" width={YAXIS_WIDTH} />
+          <Tooltip contentStyle={{ background: "#1a1a1a", border: "1px solid #333" }} />
+          <ReferenceLine x={countermeasureStart} stroke="#facc15" strokeDasharray="4 4" />
+          <Line type="monotone" dataKey="latency_ms" stroke="#fb7185" dot={false} strokeWidth={2} />
         </LineChart>
       </ResponsiveContainer>
 
