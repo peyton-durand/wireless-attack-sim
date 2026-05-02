@@ -23,10 +23,13 @@ class WirelessNetwork:
         self.initial_channel_utilization = self._baseline_channel_utilization()
         self.initial_connection_success_rate = self._clamp(connection_success_rate)
 
-        # "live" values that attacks will degrade during simulation 
+        # "live" values that attacks will degrade during simulation
         self.packet_success_rate = self.initial_packet_success_rate
         self.channel_utilization = self.initial_channel_utilization
         self.connection_success_rate = self.initial_connection_success_rate
+
+        # jammer interference accumulator used by jamming.py (dB above noise floor)
+        self.jammer_interference_dB = 0.0
 
         self.metrics = self._empty_metrics() #scoreboard, track how things have changed every tick
 
@@ -50,6 +53,7 @@ class WirelessNetwork:
         self.packet_success_rate = self.initial_packet_success_rate
         self.channel_utilization = self.initial_channel_utilization
         self.connection_success_rate = self.initial_connection_success_rate
+        self.jammer_interference_dB = 0.0
 
     def set_packet_success_rate(self, value):
         self.packet_success_rate = self._clamp(value)
